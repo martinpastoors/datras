@@ -17,11 +17,12 @@ library(icesDatras)  # install.packages("icesDatras")
 library(tidyices)    
 library(data.table)
 
-library(gisland)     # devtools::install_github("einarhjorleifsson/gisland", dependencies = FALSE); requires geo package that no longer exists
+# library(gisland)     # devtools::install_github("einarhjorleifsson/gisland", dependencies = FALSE); requires geo package that no longer exists
 # source("../gisland/R/read_sf_ftp.R")
+source("R/read_sf_ftp.R")
 source("R/geo_inside.R")
 
-library(tidyices)     # requires tidyices package that is not updated with recent tibble structure
+# library(tidyices)     # requires tidyices package that is not updated with recent tibble structure
 source("R/tidy_hh.R")
 source("R/tidy_hl.R")
 source("R/tidy_ca.R")
@@ -34,7 +35,8 @@ source("../prf/r/my utils.r")
 datapath <- "D:/ICES/DATRAS"
 
 fao     <- read_sf_ftp("FAO_AREAS_CWP_NOCOASTLINE")
-ns_area <- read_sf_ftp("NS_IBTS_RF") %>% as("Spatial")
+ns_area <- read_sf_ftp("NS_IBTS_RF") 
+
 species <- suppressMessages(readr::read_csv("ftp://ftp.hafro.is/pub/reiknid/einar/datras_worms.csv"))  %>% 
   mutate(aphia = as.character(aphia))
 afsis <- suppressMessages(read_rds(file = file.path("rdata", "afsis.rds")))
@@ -67,6 +69,7 @@ ca_desc <- readxl::read_excel(path  = "excel/DATRAS_Field_descriptions_and_examp
 # ---------------------------------------------------------------------------------------------
 
 surveys <- c("NS-IBTS", "FR-CGFS")
+# sur <- surveys[1]
 yrs <- 2020:2022  # years
 qs <- c(1,2,3,4)   # quarters
 
@@ -79,11 +82,12 @@ for (sur in c(surveys)) {
   hh <-
     bind_rows(
       hh,
-      suppressMessages(icesDatras::getDATRAS(record   = "HH",
+      # hh <-
+        suppressMessages(icesDatras::getDATRAS(record   = "HH",
                                              survey   = sur,
                                              years    = yrs,
                                              quarters = qs))  %>% 
-        tidy_hh(hh_int=hh_int, hh_num=hh_num, all_variables = FALSE)
+        tidy_hh(hh_int=hh_int, hh_num=hh_num, fao=fao, ns_area=ns_area, all_variables = FALSE)
     )
 }
 
@@ -134,6 +138,11 @@ hl %>% write_rds(file = paste0(datapath, "/tidy/", tt, "_hl.rds"))
 ca %>% write_rds(file = paste0(datapath, "/tidy/", tt, "_ca.rds"))
     
 
+# ca %>% 
+#   filter(species %in% c("mac","her","whg","whb", "bss","mur", "gur", "guu")) %>% 
+#   ggplot(aes(x=length, y=wgt)) +
+#   geom_point()+
+#   facet_wrap(~species)
 
 
 
