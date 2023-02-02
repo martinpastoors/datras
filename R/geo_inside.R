@@ -17,6 +17,7 @@ geo_inside <- function(lon, lat, map, variable) {
   if("sf" %in% class(map)) {
     variable <- rlang::enquo(variable)
     # slow if lots of lons and lats or big sf - needs improvement
+    
     pt <-
       tibble::data_frame(x = lon,
                          y = lat) %>%
