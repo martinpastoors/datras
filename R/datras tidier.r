@@ -34,8 +34,17 @@ source("../prf/r/my utils.r")
 # Data path
 datapath <- "D:/ICES/DATRAS"
 
-fao     <- read_sf_ftp("FAO_AREAS_CWP_NOCOASTLINE")
-ns_area <- read_sf_ftp("NS_IBTS_RF") 
+fao     <- 
+  gisland::read_sf_ftp("FAO_AREAS_CWP_NOCOASTLINE") %>% 
+  filter(F_LEVEL == "DIVISION") %>% 
+  dplyr::select(division = F_CODE) %>% 
+  st_as_sf()
+
+ns_area <- 
+  gisland::read_sf_ftp("NS_IBTS_RF") %>% 
+  dplyr::select(rfarea = AreaName) %>% 
+  sf::st_make_valid() %>% 
+  sf::st_as_sf()
 
 species <- suppressMessages(readr::read_csv("ftp://ftp.hafro.is/pub/reiknid/einar/datras_worms.csv"))  %>% 
   mutate(aphia = as.character(aphia))
@@ -70,7 +79,7 @@ ca_desc <- readxl::read_excel(path  = "excel/DATRAS_Field_descriptions_and_examp
 
 surveys <- c("NS-IBTS", "FR-CGFS")
 # sur <- surveys[1]
-yrs <- 2020:2022  # years
+yrs <- 1990:2022  # years
 qs <- c(1,2,3,4)   # quarters
 
 hh <- hl <- ca <- data.frame(stringsAsFactors = FALSE)
@@ -87,7 +96,7 @@ for (sur in c(surveys)) {
                                              survey   = sur,
                                              years    = yrs,
                                              quarters = qs))  %>% 
-        tidy_hh(hh_int=hh_int, hh_num=hh_num, fao=fao, ns_area=ns_area, all_variables = FALSE)
+        tidy_hh(hh_int=hh_int, hh_num=hh_num, fao=fao, ns_area=ns_area, all_variables = TRUE)
     )
 }
 
@@ -104,7 +113,7 @@ for (sur in c(surveys)) {
                                              survey   = sur,
                                              years    = yrs,
                                              quarters = qs))   %>%
-        tidy_hl(., hh=hh, species=species, afsis=afsis, hl_int=hl_int, hl_num=hl_num, all_variables = FALSE)
+        tidy_hl(., hh=hh, species=species, afsis=afsis, hl_int=hl_int, hl_num=hl_num, all_variables = TRUE)
     )
 }
 
@@ -120,7 +129,7 @@ for (sur in c(surveys)) {
                                              survey   = sur,
                                              years    = yrs,
                                              quarters = qs))    %>% 
-        tidy_ca(., species=species, afsis=afsis, ca_num=ca_num, ca_int=ca_int, all_variables=FALSE)
+        tidy_ca(., species=species, afsis=afsis, ca_num=ca_num, ca_int=ca_int, all_variables=TRUE)
     )
 }
 

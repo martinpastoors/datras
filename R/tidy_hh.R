@@ -10,9 +10,19 @@
 #'
 tidy_hh <- function(hh, hh_int, hh_num, fao, ns_area, all_variables = FALSE) {
   
-  if(missing(fao)) fao         <- read_sf_ftp("FAO_AREAS_CWP_NOCOASTLINE")
+  if(missing(fao)) 
+    fao         <- 
+      gisland::read_sf_ftp("FAO_AREAS_CWP_NOCOASTLINE") %>% 
+      filter(F_LEVEL == "DIVISION") %>% 
+      dplyr::select(division = F_CODE) %>% 
+      st_as_sf()
   
-  if(missing(ns_area)) ns_area <- read_sf_ftp("NS_IBTS_RF")
+  if(missing(ns_area)) 
+    ns_area <- 
+      gisland::read_sf_ftp("NS_IBTS_RF") %>% 
+      dplyr::select(rfarea = AreaName) %>% 
+      sf::st_make_valid() %>% 
+      sf::st_as_sf()
   
   hh <-
     hh %>% 
@@ -37,6 +47,12 @@ tidy_hh <- function(hh, hh_int, hh_num, fao, ns_area, all_variables = FALSE) {
                   datetime = lubridate::ymd_hm(paste(year, month, day, timeshot))) %>% 
     
     # do spatial allocations
+    sf::st_as_sf(coords = c("shootlong", "shootlat"), crs = 4326, remove = FALSE)  %>%  
+    
+    sf::st_join(fao) %>%  
+    sf::st_join(ns_area) %>%  
+    sf::st_drop_geometry() %>% 
+    
     # mutate(., division = geo_inside(shootlong, shootlat, fao, "F_DIVISION")) %>% 
     # mutate(ns_area  = geo_inside(shootlong, shootlat, ns_area, "AreaName")) %>% 
     
@@ -52,6 +68,7 @@ tidy_hh <- function(hh, hh_int, hh_num, fao, ns_area, all_variables = FALSE) {
                     shootlat, shootlong,
                     haullat, haullong,
                     statrec = statrec,
+                    division, 
                     daynight,
                     datatype,
                     stdspecreccode,

@@ -27,10 +27,14 @@
 tidy_ca <- function(ca, species, afsis, ca_int, ca_num, all_variables = FALSE) {
   
   
-  if(missing(species)) species <- suppressMessages(readr::read_csv("ftp://ftp.hafro.is/pub/reiknid/einar/datras_worms.csv"))  %>% 
+  if(missing(species)) 
+    species <- 
+      suppressMessages(readr::read_csv("ftp://ftp.hafro.is/pub/reiknid/einar/datras_worms.csv"))  %>% 
       mutate(aphia = as.character(aphia))
   
-  if(missing(afsis)) afsis <- suppressMessages(read_rds(file = file.path("rdata", "afsis.rds"))) 
+  if(missing(afsis)) 
+    afsis <- 
+      suppressMessages(read_rds(file = file.path("rdata", "afsis.rds"))) 
   
   ca <-
     ca %>% 
